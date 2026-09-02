@@ -6,6 +6,8 @@ from src.api.football_data import (
     get_matches
 )
 
+import pandas as pd
+
 st.set_page_config(
     page_title="Football Analytics",
     page_icon="⚽",
@@ -43,6 +45,49 @@ except Exception as e:
     st.error(f"Erreur lors de la récupération des données : {e}")
 
 
+st.subheader("Matchs")
+
+try:
+    matches_data = get_matches(selected_competition["code"])
+    matches = matches_data["matches"]
+
+    matches_df = pd.DataFrame(matches)
+
+    finished_matches = matches_df[
+        matches_df["score"].apply(
+            lambda score: score["fullTime"]["home"] is not None
+            and score["fullTime"]["away"] is not None
+        )
+    ]
+
+    total_matches = len(matches)
+    played_matches = len(finished_matches)
+
+    total_goals = sum(
+        score["fullTime"]["home"] + score["fullTime"]["away"]
+        for score in finished_matches["score"]
+    )
+
+    average_goals = (
+        total_goals / played_matches
+        if played_matches > 0
+        else 0
+    )
+
+except Exception as e:
+    st.error(f"Erreur lors de la récupération des matchs : {e}")
+
+
+st.subheader("Statistiques")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("⚽ Matchs", total_matches)
+col2.metric("✅ Matchs joués", played_matches)
+col3.metric("🥅 Buts", total_goals)
+col4.metric("📊 Moy. buts / match", f"{average_goals:.2f}")
+
+
 st.subheader("Classement")
 
 try:
@@ -78,9 +123,6 @@ except Exception as e:
 st.subheader("Matchs")
 
 try:
-    matches_data = get_matches(selected_competition["code"])
-    matches = matches_data["matches"]
-
     matches_table = []
 
     for match in matches:
@@ -106,4 +148,6 @@ try:
     )
 
 except Exception as e:
-    st.error(f"Erreur lors de la récupération des matchs : {e}")
+    st.error(f"Erreur lors de l'affichage des matchs : {e}")
+
+st.caption("Data venant de football-analytics.org")
