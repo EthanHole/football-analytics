@@ -150,4 +150,4 @@ try:
 except Exception as e:
     st.error(f"Erreur lors de l'affichage des matchs : {e}")
 
-st.caption("Data venant de football-analytics.org")
+st.caption("Data venant de football-data.org")
